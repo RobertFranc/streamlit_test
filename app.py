@@ -17,9 +17,9 @@ class VideoTransformer(VideoTransformerBase):
 def video_frame_callback(frame):
     # Convert the frame to a NumPy array (BGR format for OpenCV)
     img = frame.to_ndarray(format="bgr24") 
-    
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     # ... MediaPipe / Drawing logic here ...
-    results = mp_pose.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    results = mp_pose.process(img)
     
     if results.pose_landmarks:
         # Draw landmarks for user feedback
@@ -31,17 +31,17 @@ def video_frame_callback(frame):
     
     # --- FRAME PROCESSING ---
     # Example: Apply Canny edge detection
-    edges = cv2.Canny(img, 100, 200)
+    #edges = cv2.Canny(cv2.cvtColor(img, cv2.COLOR_RGB2BGR), 100, 200)
     
-    cv2.circle(edges, (100, 100), 50, (255, 0, 0), -1)
+    #cv2.circle(edges, (100, 100), 50, (255, 0, 0), -1)
     
     # Convert grayscale edges back to BGR for display
-    processed_img = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+    #processed_img = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
     # ------------------------------
 
     # Return the processed frame back to the browser
-    return av.VideoFrame.from_ndarray(processed_img, format="bgr24")
-
+    #return av.VideoFrame.from_ndarray(processed_img, format="bgr24")
+    return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 st.title("Real-Time Video Streaming App")
 st.write("Click 'Start' to turn on your webcam and see live streaming.")
