@@ -61,7 +61,7 @@ webrtc_streamer(
     rtc_configuration=RTC_CONFIGURATION,
     media_stream_constraints={"video": True, "audio": False},   
     async_transform=True,
-    video_frame_callback=video_frame_callback
+    #video_frame_callback=video_frame_callback
 )
 
 
