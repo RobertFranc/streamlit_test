@@ -3,6 +3,7 @@ from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfigura
 import cv2
 import numpy as np
 import mediapipe as mp
+import av
 
 
 class VideoTransformer(VideoTransformerBase):
@@ -41,19 +42,32 @@ def video_frame_callback(frame):
     # Return the processed frame back to the browser
     return av.VideoFrame.from_ndarray(processed_img, format="bgr24")
 
+
 st.title("Real-Time Video Streaming App")
 st.write("Click 'Start' to turn on your webcam and see live streaming.")
 
 # Initialize MediaPipe outside the callback to avoid reloading models on every frame
-mp_pose = mp.solutions.pose.Pose(static_image_mode=False, min_detection_confidence=0.5)
+mp_pose = mp.solutions.pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=0) # Complexity 0 is faster for Cloud
 mp_drawing = mp.solutions.drawing_utils
+
+# Initialize ONCE at the global level (outside the class)
+mp_hands = mp.solutions.hands.Hands(
+    static_image_mode=False,
+    max_num_hands=2,
+    min_detection_confidence=0.5
+)
 
 # Optional: Configure STUN servers for reliable deployment on Community Cloud
 # This helps in establishing peer-to-peer connections across different networks
+# RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
 RTC_CONFIGURATION = RTCConfiguration(
-    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+    {"iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]},
+        {"urls": ["stun:stun1.l.google.com:19302"]},
+        # If possible, replace the below with own Twilio/Metered TURN credentials
+        # {"urls": ["turn:relay.metered.ca:80"], "username": "openrelayproject", "credential": "openrelayproject"}
+    ]}
 )
-
 
 # Streamlit-WebRTC component
 webrtc_streamer(
