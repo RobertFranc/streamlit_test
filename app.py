@@ -47,7 +47,7 @@ st.title("Real-Time Video Streaming App")
 st.write("Click 'Start' to turn on your webcam and see live streaming.")
 
 # Initialize MediaPipe outside the callback to avoid reloading models on every frame:
-# mp_pose = mp.solutions.pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=0) # Complexity 0 is faster for Cloud
+
 # Force the "Lite" model which is more stable on Cloud:
 mp_pose = mp.solutions.pose.Pose(
     static_image_mode=False,
@@ -57,6 +57,7 @@ mp_pose = mp.solutions.pose.Pose(
     min_tracking_confidence=0.5
 )
 
+mp_pose = mp.solutions.pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=0) # Complexity 0 is faster for Cloud
 
 mp_drawing = mp.solutions.drawing_utils
 
