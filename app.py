@@ -3,6 +3,7 @@ from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfigura
 import cv2
 import numpy as np
 import mediapipe as mp
+import av
 
 
 class VideoTransformer(VideoTransformerBase):
@@ -16,9 +17,14 @@ class VideoTransformer(VideoTransformerBase):
 def video_frame_callback(frame):
     # Convert the frame to a NumPy array (BGR format for OpenCV)
     img = frame.to_ndarray(format="bgr24") 
-    
+
+    # Convert color format from BGR (cv2) to RGB (mediapipe)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    # TODO: 1⃣ Flip image if using front camera or laptop integrated webcam
+
     # ... MediaPipe / Drawing logic here ...
-    results = mp_pose.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    results = mp_pose.process(img)
     
     if results.pose_landmarks:
         # Draw landmarks for user feedback
@@ -28,41 +34,78 @@ def video_frame_callback(frame):
         # Extract specific coordinates and pass to CNN model
         # prediction = my_cnn_model.predict(preprocessed_landmarks)
     
-    # --- FRAME PROCESSING ---
-    # Example: Apply Canny edge detection
-    edges = cv2.Canny(img, 100, 200)
+    # # --- FRAME PROCESSING ---
+    # # Example: Apply Canny edge detection
+    # edges = cv2.Canny(cv2.cvtColor(img, cv2.COLOR_RGB2BGR), 100, 200)
     
-    cv2.circle(edges, (100, 100), 50, (255, 0, 0), -1)
-    
-    # Convert grayscale edges back to BGR for display
-    processed_img = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-    # ------------------------------
+    # cv2.circle(edges, (100, 100), 50, (255, 0, 0), -1)
+
+    # Convert color format back from RGB (mediapipe) to BGR (cv2)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+    # # Convert grayscale edges back to BGR for display
+    # processed_img = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+    # # ------------------------------
 
     # Return the processed frame back to the browser
-    return av.VideoFrame.from_ndarray(processed_img, format="bgr24")
+    #return av.VideoFrame.from_ndarray(processed_img, format="bgr24")
+    return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 st.title("Real-Time Video Streaming App")
 st.write("Click 'Start' to turn on your webcam and see live streaming.")
 
-# Initialize MediaPipe outside the callback to avoid reloading models on every frame
-mp_pose = mp.solutions.pose.Pose(static_image_mode=False, min_detection_confidence=0.5)
+# Initialize MediaPipe outside the callback to avoid reloading models on every frame:
+
+# Legacy API: Force the "Lite" model which is more stable on Cloud:
+# TODO: 2⃣ change to the current API: from mediapipe.tasks.vision import PoseLandmarkerOptions, PoseLandmarker
+mp_pose = mp.solutions.pose.Pose( 
+    static_image_mode=False,
+    model_complexity=1, # 0 = Lite and is faster for Cloud, 1 = Full, 2 = Heavy
+    smooth_landmarks=True,
+    enable_segmentation=False,
+    smooth_segmentation=True,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+)
+
+
+
+# Initialize ONCE at the global level (outside the class)
+mp_hands = mp.solutions.hands.Hands(
+    static_image_mode=False, # Whether to treat the input images as a batch of static and possibly unrelated images, or a video stream.
+    max_num_hands=2,
+    model_complexity=1,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+)
+
+
 mp_drawing = mp.solutions.drawing_utils
+
 
 # Optional: Configure STUN servers for reliable deployment on Community Cloud
 # This helps in establishing peer-to-peer connections across different networks
+# RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
 RTC_CONFIGURATION = RTCConfiguration(
-    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+    {"iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]},
+        {"urls": ["stun:stun1.l.google.com:19302"]},
+        # If possible, replace the below with own Twilio/Metered TURN credentials
+        # {"urls": ["turn:relay.metered.ca:80"], "username": "openrelayproject", "credential": "openrelayproject"}
+    ]}
 )
-
 
 # Streamlit-WebRTC component
 webrtc_streamer(
     key="live-stream",
     rtc_configuration=RTC_CONFIGURATION,
     media_stream_constraints={"video": True, "audio": False},   
-    async_transform=True,
+    #async_transform=True,
+    async_processing=True,
     video_frame_callback=video_frame_callback
 )
 
 
 
+# TODO: 1⃣ Flip image if using front camera or laptop integrated webcam
+# TODO: 2⃣ change to the current API: from mediapipe.tasks.vision import PoseLandmarkerOptions, PoseLandmarker
