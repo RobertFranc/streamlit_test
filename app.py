@@ -13,8 +13,36 @@ class VideoTransformer(VideoTransformerBase):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         return gray
 
+def resize_img(image, /, window_name:str='', d_height:int=480, d_width:int=480, verbose:bool=False):
+    """
+    ### Proportionally resize an image to desired size and show it.
+    """
+    if not window_name:
+        window_name = 'image'
+    h, w = image.shape[:2]
+    if h < w:
+        img = cv2.resize(src=image, dsize=(d_width, math.floor(h / (w/d_width) ) ) )
+    elif h < w:
+        img = cv2.resize(src=image, dsize=(math.floor(w / (h / d_height) ), d_height) )
+    elif h == w:
+        img = cv2.resize(src=image,
+                         dsize=(d_height, d_width)
+                        )
+    
+    if verbose:
+        print(d_height, d_width)
+        print(f"Original image:\t{window_name}\t{image.shape}")
+        print(f"Reshaped image:\t{window_name}\t{img.shape}")
+
+    return img
+
+
 # Callback function to process each video frame
 def video_frame_callback(frame):
+    # Take only the 5th frame:
+    st.session_state.framecount += 1
+    if st.session_state.framecount % 5 != 0:
+        return frame
     # Convert the frame to a NumPy array (BGR format for OpenCV)
     img = frame.to_ndarray(format="bgr24") 
     img.flags.writeable = False
@@ -98,6 +126,8 @@ def video_frame_callback(frame):
         # Custom CNN Model Logic
         # Extract specific coordinates and pass to CNN model
         # prediction = my_cnn_model.predict(preprocessed_landmarks)
+    
+    results_hands = mp_hands.process(img)
     if results_hands.hand_landmarks:
         # Draw landmarks for user feedback
         #mp_drawing.draw_landmarks(img, results_hands.hand_landmarks, mp.solutions.hand.HANDS_CONNECTIONS)
@@ -122,7 +152,7 @@ def video_frame_callback(frame):
 
 st.title("Real-Time Video Streaming App")
 st.write("Click 'Start' to turn on your webcam and see live streaming.")
-
+st.session_state.framecount = 0
 # Initialize MediaPipe outside the callback to avoid reloading models on every frame:
 # For mediapipe processing one frame:
 face_mesh = mp.solutions.face_mesh.FaceMesh(
