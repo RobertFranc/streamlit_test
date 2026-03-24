@@ -152,7 +152,7 @@ def video_frame_callback(frame):
 
 st.title("Real-Time Video Streaming App")
 st.write("Click 'Start' to turn on your webcam and see live streaming.")
-st.session_state.framecount = 0
+st.session_state['framecount'] = st.session_state.get('framecount', 0)
 # Initialize MediaPipe outside the callback to avoid reloading models on every frame:
 # For mediapipe processing one frame:
 face_mesh = mp.solutions.face_mesh.FaceMesh(
@@ -205,7 +205,8 @@ RTC_CONFIGURATION = RTCConfiguration(
 webrtc_streamer(
     key="live-stream",
     rtc_configuration=RTC_CONFIGURATION,
-    media_stream_constraints={"video": True, "audio": False},   
+    #media_stream_constraints={"video": True, "audio": False},   
+    media_stream_constraints={"video": {"width": 640, "height": 480}, "audio": False},
     #async_transform=True,
     async_processing=True,
     video_frame_callback=video_frame_callback
