@@ -41,8 +41,7 @@ def resize_img(image, window_name:str='', d_height:int=480, d_width:int=480, ver
 def video_frame_callback(frame):
     # Take only the 5th frame:
     st.session_state.framecount += 1
-    if st.session_state.framecount % 5 != 0:
-        return frame
+    #if st.session_state.framecount % 5 != 0: return frame
     # Convert the frame to a NumPy array (BGR format for OpenCV)
     img = frame.to_ndarray(format="bgr24") 
     img.flags.writeable = False
