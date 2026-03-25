@@ -13,7 +13,7 @@ class VideoTransformer(VideoTransformerBase):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         return gray
 
-def resize_img(image, /, window_name:str='', d_height:int=480, d_width:int=480, verbose:bool=False):
+def resize_img(image, window_name:str='', d_height:int=480, d_width:int=480, verbose:bool=False):
     """
     ### Proportionally resize an image to desired size and show it.
     """
@@ -75,7 +75,7 @@ def video_frame_callback(frame):
 
         # 👇
         # Resize the frame to for easy viewing
-        resized_frame = resize_img(window_name='img', image=cropped_image, d_height=480, d_width=480, verbose=True)
+        #resized_frame = resize_img(window_name='img', image=cropped_image, d_height=480, d_width=480, verbose=True)
         # 👆           
 
         pil_image = Image.fromarray(cropped_image) # convert image frame to PIL Image object
