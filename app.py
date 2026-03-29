@@ -29,16 +29,15 @@ def video_frame_callback(frame):
         # Draw landmarks for user feedback
         mp_drawing.draw_landmarks(img, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
         
-        
         # Custom CNN Model Logic
         # Extract specific coordinates and pass to CNN model
         # prediction = my_cnn_model.predict(preprocessed_landmarks)
 
-    if results_hands.hand_landmarks:
+    #if results_hands.hand_landmarks:
         # Draw landmarks for user feedback
         #mp_drawing.draw_landmarks(img, results_hands.hand_landmarks, mp.solutions.hand.HANDS_CONNECTIONS)
-        mp_drawing.draw_landmarks(img, results_hands.left_hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS)
-        mp_drawing.draw_landmarks(img, results_hands.right_hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS)
+        #mp_drawing.draw_landmarks(img, results_hands.left_hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS)
+        #mp_drawing.draw_landmarks(img, results_hands.right_hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS)
         
     # # --- FRAME PROCESSING ---
     # # Example: Apply Canny edge detection
@@ -47,7 +46,7 @@ def video_frame_callback(frame):
     # cv2.circle(edges, (100, 100), 50, (255, 0, 0), -1)
 
     # Convert color format back from RGB (mediapipe) to BGR (cv2)
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
     # # Convert grayscale edges back to BGR for display
     # processed_img = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
@@ -78,13 +77,13 @@ mp_pose = mp.solutions.pose.Pose(
 
 
 # Initialize ONCE at the global level (outside the class)
-mp_hands = mp.solutions.hands.Hands(
-    static_image_mode=False, # Whether to treat the input images as a batch of static and possibly unrelated images, or a video stream.
-    max_num_hands=2,
-    model_complexity=1,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-)
+#mp_hands = mp.solutions.hands.Hands(
+    #static_image_mode=False, # Whether to treat the input images as a batch of static and possibly unrelated images, or a video stream.
+    #max_num_hands=2,
+    #model_complexity=1,
+    #min_detection_confidence=0.5,
+    #min_tracking_confidence=0.5
+#)
 
 
 mp_drawing = mp.solutions.drawing_utils
