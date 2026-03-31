@@ -1,7 +1,6 @@
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration
+from streamlit_webrtc import webrtc_streamer, RTCConfiguration
 import cv2
-import numpy as np
 import mediapipe as mp
 import av
 
@@ -24,33 +23,21 @@ def video_frame_callback(frame):
 ##################################################
     # ... MediaPipe / Drawing logic here ...
     results = mp_pose.process(img)
-    results_hands = mp_hands.process(img)
+
     if results.pose_landmarks:
         # Draw landmarks for user feedback
         mp_drawing.draw_landmarks(img, results.pose_landmarks, mp.solutions.pose.POSE_CONNECTIONS)
+        
         
         # Custom CNN Model Logic
         # Extract specific coordinates and pass to CNN model
         # prediction = my_cnn_model.predict(preprocessed_landmarks)
 
-    #if results_hands.hand_landmarks:
-        # Draw landmarks for user feedback
-        #mp_drawing.draw_landmarks(img, results_hands.hand_landmarks, mp.solutions.hand.HANDS_CONNECTIONS)
-        #mp_drawing.draw_landmarks(img, results_hands.left_hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS)
-        #mp_drawing.draw_landmarks(img, results_hands.right_hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS)
-        
     # # --- FRAME PROCESSING ---
-    # # Example: Apply Canny edge detection
-    # edges = cv2.Canny(cv2.cvtColor(img, cv2.COLOR_RGB2BGR), 100, 200)
-    
-    # cv2.circle(edges, (100, 100), 50, (255, 0, 0), -1)
-
     # Convert color format back from RGB (mediapipe) to BGR (cv2)
-    #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
-    # # Convert grayscale edges back to BGR for display
-    # processed_img = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-    # # ------------------------------
+    # ------------------------------
 
     # Return the processed frame back to the browser
     #return av.VideoFrame.from_ndarray(processed_img, format="bgr24")
@@ -77,27 +64,13 @@ mp_pose = mp.solutions.pose.Pose(
 
 
 # Initialize ONCE at the global level (outside the class)
-#mp_hands = mp.solutions.hands.Hands(
-    #static_image_mode=False, # Whether to treat the input images as a batch of static and possibly unrelated images, or a video stream.
-    #max_num_hands=2,
-    #model_complexity=1,
-    #min_detection_confidence=0.5,
-    #min_tracking_confidence=0.5
-#)
-
-
 mp_drawing = mp.solutions.drawing_utils
 
 
 # Optional: Configure STUN servers for reliable deployment on Community Cloud
-# This helps in establishing peer-to-peer connections across different networks
-# RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
 RTC_CONFIGURATION = RTCConfiguration(
     {"iceServers": [
         {"urls": ["stun:stun.l.google.com:19302"]},
-        {"urls": ["stun:stun1.l.google.com:19302"]},
-        # If possible, replace the below with own Twilio/Metered TURN credentials
-        # {"urls": ["turn:relay.metered.ca:80"], "username": "openrelayproject", "credential": "openrelayproject"}
     ]}
 )
 
@@ -110,8 +83,3 @@ webrtc_streamer(
     async_processing=True,
     video_frame_callback=video_frame_callback
 )
-
-
-
-# TODO: 1⃣ ✅Flip image if using front camera or laptop integrated webcam
-# TODO: 2⃣ change to the current API: from mediapipe.tasks.vision import PoseLandmarkerOptions, PoseLandmarker
